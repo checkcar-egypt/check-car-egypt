@@ -1,0 +1,1320 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>لوحة الفاحص | Check Car Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.6/JsBarcode.all.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--gold:#ffc107;--gold-dark:#f9a825;--navy:#1a2340;--bg:#f8f9fc;--white:#fff;--border:#e2e8f0;--text:#1a2340;--text-gray:#64748b;--text-light:#94a3b8;--grad:linear-gradient(135deg,#ffc107,#f9a825);--red:#c62828;--red-dark:#b71c1c}
+body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.7}
+
+.login-screen{position:fixed;inset:0;background:linear-gradient(135deg,#0f1628,#1a2340);display:flex;align-items:center;justify-content:center;padding:20px;z-index:1000}
+.login-screen.hidden{display:none}
+.login-box{background:var(--white);border-radius:26px;padding:50px 40px;max-width:440px;width:100%;border:2px solid rgba(255,193,7,.3);box-shadow:0 30px 80px rgba(0,0,0,.5);text-align:center}
+.login-logo{width:85px;height:85px;background:var(--grad);border-radius:24px;display:flex;align-items:center;justify-content:center;font-size:2.3rem;color:var(--navy);margin:0 auto 22px;box-shadow:0 15px 40px rgba(255,193,7,.5)}
+.login-box h1{font-family:'Orbitron',sans-serif;font-size:1.5rem;font-weight:900;color:var(--navy);letter-spacing:2px;margin-bottom:6px}
+.login-box .sub{font-size:.9rem;color:var(--text-gray);font-weight:600;margin-bottom:30px}
+.login-box label{display:block;text-align:right;font-size:.82rem;font-weight:800;color:var(--navy);margin-bottom:8px}
+.login-box input{width:100%;padding:15px 18px;background:var(--bg);border:2px solid var(--border);border-radius:14px;font-family:'Cairo',sans-serif;font-weight:700;font-size:1rem;color:var(--text);outline:none;margin-bottom:18px;text-align:center;letter-spacing:2px}
+.login-box input:focus{border-color:var(--gold);box-shadow:0 0 0 4px rgba(255,193,7,.15)}
+.login-box button{width:100%;padding:16px;background:var(--grad);color:var(--navy);border:none;border-radius:14px;font-family:'Cairo',sans-serif;font-weight:900;font-size:1rem;cursor:pointer;box-shadow:0 10px 30px rgba(255,193,7,.35)}
+.login-err{background:#fee2e2;color:#dc2626;padding:10px 14px;border-radius:10px;font-size:.85rem;font-weight:700;margin-bottom:15px;display:none}
+.login-err.show{display:block}
+.login-hint{margin-top:20px;font-size:.78rem;color:var(--text-light);font-weight:700}
+
+.dashboard{display:none;min-height:100vh;padding-bottom:100px}
+.dashboard.active{display:block}
+
+.admin-header{background:linear-gradient(135deg,#1a2340,#0f1628);color:#fff;padding:16px 26px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;position:sticky;top:0;z-index:50}
+.brand{display:flex;align-items:center;gap:12px}
+.brand-logo{width:50px;height:50px;background:#fff;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;color:var(--navy);overflow:hidden;border:2px solid rgba(255,193,7,.4);flex-shrink:0}
+.brand-logo img{width:100%;height:100%;object-fit:contain;padding:3px}
+.brand h2{font-family:'Orbitron',sans-serif;font-size:1.15rem;font-weight:900}
+.brand span{font-size:.72rem;color:var(--gold);font-weight:700;display:block}
+.code-pill{font-family:'Orbitron',sans-serif;background:rgba(255,193,7,.15);border:1px solid rgba(255,193,7,.4);color:var(--gold);padding:8px 18px;border-radius:50px;font-weight:900;font-size:.85rem}
+.header-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.header-actions button,.header-actions a{background:rgba(255,255,255,.1);border:none;color:#fff;padding:10px 16px;border-radius:50px;font-family:'Cairo',sans-serif;font-weight:800;font-size:.82rem;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:8px}
+.header-actions button:hover,.header-actions a:hover{background:var(--grad);color:var(--navy)}
+.header-actions .upload-logo{background:rgba(255,193,7,.2);color:var(--gold);border:1px solid rgba(255,193,7,.4)}
+.header-actions .logout{background:rgba(220,38,38,.2);color:#fca5a5}
+.header-actions .logout:hover{background:#dc2626;color:#fff}
+
+.admin-tabs{background:var(--white);border-bottom:2px solid var(--border);display:flex;gap:4px;padding:10px 26px;overflow-x:auto;position:sticky;top:76px;z-index:49;scrollbar-width:none}
+.admin-tabs::-webkit-scrollbar{display:none}
+.admin-tab{padding:11px 20px;background:transparent;border:none;border-radius:12px;font-family:'Cairo',sans-serif;font-weight:800;font-size:.85rem;color:var(--text-gray);cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:8px}
+.admin-tab:hover{background:rgba(255,193,7,.1);color:var(--gold-dark)}
+.admin-tab.active{background:var(--grad);color:var(--navy)}
+
+.admin-content{padding:26px;max-width:1300px;margin:0 auto}
+.pane{display:none}
+.pane.active{display:block}
+
+.pane-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px;flex-wrap:wrap;gap:12px}
+.pane-header h3{font-size:1.25rem;font-weight:900;color:var(--navy);display:flex;align-items:center;gap:12px}
+.pane-header h3 i{width:42px;height:42px;background:var(--grad);color:var(--navy);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1rem}
+
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field.full{grid-column:1/-1}
+.field label{font-size:.82rem;font-weight:800;color:var(--navy);display:flex;align-items:center;gap:6px}
+.field label i{color:var(--gold-dark)}
+.field input,.field select,.field textarea{padding:13px 16px;background:var(--white);border:2px solid var(--border);border-radius:12px;font-family:'Cairo',sans-serif;font-weight:700;font-size:.92rem;color:var(--text);outline:none}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--gold);box-shadow:0 0 0 4px rgba(255,193,7,.15)}
+.field textarea{resize:vertical;min-height:90px;line-height:1.7}
+
+.section-bar{background:linear-gradient(135deg,var(--red),var(--red-dark));color:#fff;padding:12px 24px;border-radius:14px;font-size:1.1rem;font-weight:900;margin:30px 0 20px;display:flex;align-items:center;gap:12px}
+.section-bar.orange{background:linear-gradient(135deg,#ff9800,#f57c00)}
+.section-bar.navy{background:linear-gradient(135deg,#1a2340,#0f1628)}
+
+.checklist-cat{margin-bottom:22px;border:2px solid var(--border);border-radius:16px;overflow:hidden;background:var(--white)}
+.checklist-cat-head{background:linear-gradient(135deg,#1a2340,#0f1628);color:var(--gold);padding:14px 22px;font-weight:900;font-size:.95rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+.checklist-cat-head .cat-score{font-family:'Orbitron',sans-serif;font-size:.82rem;color:#fff;background:rgba(255,255,255,.1);padding:5px 14px;border-radius:50px}
+.checklist-item{padding:14px 16px;border-bottom:1px solid var(--border)}
+.checklist-item:last-child{border-bottom:none}
+.item-name{font-weight:800;font-size:.92rem;color:var(--navy);margin-bottom:10px}
+.status-pills{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.status-pill{padding:8px 14px;border-radius:50px;font-weight:900;font-size:.75rem;cursor:pointer;border:2px solid var(--border);background:var(--bg);color:var(--text-gray);font-family:'Cairo',sans-serif}
+.status-pill:hover{border-color:var(--gold)}
+.status-pill[data-status="good"].selected{background:#dcfce7;color:#15803d;border-color:#86efac}
+.status-pill[data-status="warn"].selected{background:#fef3c7;color:#b45309;border-color:#fcd34d}
+.status-pill[data-status="bad"].selected{background:#fee2e2;color:#b91c1c;border-color:#fca5a5}
+.status-pill[data-status="na"].selected{background:#f1f5f9;color:#64748b;border-color:#cbd5e1}
+.checklist-note{width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:'Cairo',sans-serif;font-size:.82rem;font-weight:600;background:var(--bg);color:var(--text);outline:none}
+.checklist-note:focus{border-color:var(--gold);background:var(--white)}
+
+.car-diagram-section{margin-bottom:30px}
+.diagram-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.diagram-card{background:var(--white);border:2px solid var(--border);border-radius:20px;padding:16px}
+.diagram-card:hover{border-color:var(--gold)}
+.diagram-card h4{font-size:.9rem;font-weight:900;color:var(--navy);margin-bottom:10px;text-align:center;display:flex;align-items:center;justify-content:center;gap:8px}
+.diagram-card h4 i{color:var(--red)}
+.car-svg-wrap{position:relative;cursor:crosshair;background:linear-gradient(135deg,#f8f9fc,#eef1f7);border-radius:14px;padding:10px;overflow:hidden;border:1px solid var(--border)}
+.car-svg-wrap svg{width:100%;height:auto;display:block;max-height:220px}
+.car-svg-wrap .car-body{fill:#1a2340;stroke:#0f1628;stroke-width:1.5}
+.car-svg-wrap .car-window{fill:#e2e8f0}
+.car-svg-wrap .car-wheel{fill:#0f1628}
+.car-svg-wrap .car-light{fill:#ffc107}
+.car-svg-wrap .marker{fill:#dc2626;stroke:#fff;stroke-width:2;cursor:pointer}
+.car-svg-wrap .marker:hover{fill:#ff9800}
+.car-svg-wrap .marker-number{fill:#fff;font-size:11px;font-weight:900;text-anchor:middle;pointer-events:none;font-family:'Cairo',sans-serif}
+
+.markers-list{margin-top:14px;display:flex;flex-direction:column;gap:8px;max-height:200px;overflow-y:auto;padding:4px}
+.marker-item{display:flex;gap:10px;align-items:center;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:8px 12px;font-size:.82rem}
+.marker-item:hover{border-color:var(--gold);background:var(--white)}
+.marker-item .num{width:26px;height:26px;background:var(--red);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:.75rem;flex-shrink:0;font-family:'Orbitron',sans-serif}
+.marker-item input{flex:1;background:transparent;border:none;font-family:'Cairo',sans-serif;font-weight:700;font-size:.82rem;color:var(--text);outline:none;padding:4px}
+.marker-item .del-marker{background:transparent;border:none;color:#dc2626;cursor:pointer;font-size:.85rem;padding:4px 8px;border-radius:6px}
+.marker-item .del-marker:hover{background:#fee2e2}
+
+.textarea-group{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:22px}
+.textarea-item{display:flex;flex-direction:column;gap:8px}
+.textarea-item label{font-weight:900;font-size:.92rem;color:var(--navy);display:flex;align-items:center;gap:8px}
+.textarea-item label i{color:var(--gold-dark)}
+.textarea-item textarea{padding:14px 16px;border:2px solid var(--border);border-radius:14px;font-family:'Cairo',sans-serif;font-weight:600;font-size:.9rem;background:var(--white);color:var(--text);outline:none;resize:vertical;min-height:110px;line-height:1.8}
+.textarea-item textarea:focus{border-color:var(--gold);box-shadow:0 0 0 4px rgba(255,193,7,.15)}
+
+.files-drop{border:3px dashed var(--border);border-radius:20px;background:var(--white);padding:45px 20px;text-align:center;cursor:pointer;margin-bottom:20px}
+.files-drop:hover,.files-drop.over{border-color:var(--gold);transform:translateY(-3px)}
+.files-drop i{font-size:3rem;color:var(--gold-dark);display:block;margin-bottom:14px}
+.files-drop h3{font-size:1.15rem;font-weight:900;color:var(--navy);margin-bottom:6px}
+.files-drop p{font-size:.85rem;color:var(--text-gray);font-weight:600}
+.files-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:15px}
+.file-item{position:relative;background:var(--white);border:2px solid var(--border);border-radius:16px;padding:12px}
+.file-item:hover{border-color:var(--gold)}
+.file-thumb{aspect-ratio:1;border-radius:12px;overflow:hidden;background:var(--bg);display:flex;align-items:center;justify-content:center;margin-bottom:10px;position:relative}
+.file-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.file-thumb .pdf{font-size:3rem;color:#dc2626}
+.file-thumb .tag{position:absolute;top:8px;right:8px;background:rgba(26,35,64,.9);color:var(--gold);padding:4px 10px;border-radius:50px;font-size:.7rem;font-weight:900}
+.file-item input,.file-item select{width:100%;padding:8px 12px;border:1.5px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text);font-family:'Cairo',sans-serif;font-size:.8rem;font-weight:700;outline:none;margin-bottom:6px}
+.file-item .size{font-size:.72rem;color:var(--text-light);font-weight:700;text-align:center}
+.file-del{position:absolute;top:-8px;right:-8px;width:32px;height:32px;border-radius:50%;background:#fee2e2;color:#dc2626;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.8rem;z-index:3}
+.file-del:hover{background:#dc2626;color:#fff}
+
+.admin-footer-bar{position:fixed;bottom:0;left:0;right:0;background:var(--white);border-top:2px solid var(--border);padding:14px 26px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;z-index:40;box-shadow:0 -10px 40px rgba(0,0,0,.06)}
+.live-score{display:flex;align-items:center;gap:14px}
+.live-score .circle{width:60px;height:60px;border-radius:50%;background:var(--grad);color:var(--navy);display:flex;align-items:center;justify-content:center;font-family:'Orbitron',sans-serif;font-weight:900;font-size:1.3rem}
+.live-score .info div:first-child{font-size:.7rem;font-weight:800;color:var(--text-light);text-transform:uppercase}
+.live-score .info div:last-child{font-size:.88rem;font-weight:900;color:var(--navy)}
+
+.btn{padding:13px 22px;border-radius:50px;font-family:'Cairo',sans-serif;font-weight:900;font-size:.86rem;cursor:pointer;border:none;display:inline-flex;align-items:center;gap:10px}
+.btn-primary{background:var(--grad);color:var(--navy);box-shadow:0 8px 25px rgba(255,193,7,.35)}
+.btn-primary:hover{transform:translateY(-3px)}
+.btn-dark{background:linear-gradient(135deg,#1a2340,#0f1628);color:#fff}
+.btn-outline{background:var(--white);color:var(--navy);border:2px solid var(--border)!important}
+.btn-outline:hover{border-color:var(--gold)!important;color:var(--gold-dark)}
+.btn-wa{background:linear-gradient(135deg,#25D366,#128C7E);color:#fff}
+.btn-danger{background:#fee2e2;color:#dc2626;border:2px solid #fecaca}
+.btn-danger:hover{background:#dc2626;color:#fff}
+
+.logo-modal{position:fixed;inset:0;background:rgba(15,22,40,.92);display:none;z-index:10000;align-items:center;justify-content:center;padding:20px}
+.logo-modal.active{display:flex}
+.logo-modal-box{background:var(--white);border-radius:24px;padding:35px;max-width:480px;width:100%;border:2px solid rgba(255,193,7,.4);text-align:center}
+.logo-modal-box h3{font-size:1.3rem;font-weight:900;color:var(--navy);margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:10px}
+.logo-modal-box h3 i{color:var(--gold-dark)}
+.logo-modal-box .sub{font-size:.85rem;color:var(--text-gray);font-weight:600;margin-bottom:22px}
+.logo-preview{width:160px;height:160px;margin:0 auto 22px;background:var(--bg);border:3px dashed var(--border);border-radius:20px;display:flex;align-items:center;justify-content:center;overflow:hidden;color:var(--text-light);font-size:3rem}
+.logo-preview img{width:100%;height:100%;object-fit:contain;padding:12px;background:#fff}
+.logo-btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.logo-btn{padding:14px 26px;border-radius:50px;font-family:'Cairo',sans-serif;font-weight:900;font-size:.9rem;cursor:pointer;border:none;display:inline-flex;align-items:center;gap:10px}
+.logo-btn.upload{background:var(--grad);color:var(--navy)}
+.logo-btn.remove{background:#fee2e2;color:#dc2626;border:2px solid #fecaca}
+.logo-btn.remove:hover{background:#dc2626;color:#fff}
+.logo-btn.close{background:var(--bg);color:var(--text-gray);border:2px solid var(--border);width:100%;justify-content:center;margin-top:12px}
+
+.report-modal{position:fixed;inset:0;background:rgba(15,22,40,.92);display:none;z-index:9999;overflow-y:auto;padding:30px 15px}
+.report-modal.active{display:block}
+.report-modal-inner{max-width:900px;margin:0 auto}
+.report-actions{display:flex;justify-content:flex-end;gap:10px;margin-bottom:15px;position:sticky;top:0;z-index:10}
+.report-actions button{padding:12px 24px;border-radius:50px;font-weight:900;font-family:'Cairo',sans-serif;border:none;cursor:pointer;display:inline-flex;align-items:center;gap:8px;font-size:.88rem}
+.report-actions .dl{background:var(--grad);color:var(--navy)}
+.report-actions .cl{background:#fff;color:var(--navy)}
+
+.report-doc{background:#fff;color:#1a2340;width:100%;border-radius:20px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.4);font-family:'Cairo',sans-serif}
+
+.rpt-cover{background:linear-gradient(135deg,#0f1628 0%,#1a2340 60%,#0f1628 100%);padding:50px 50px 40px;color:#fff}
+.rpt-cover-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:35px;flex-wrap:wrap;gap:20px}
+.rpt-logo-box{background:#fff;padding:12px 18px;border-radius:16px;box-shadow:0 10px 30px rgba(255,193,7,.35);display:flex;align-items:center;justify-content:center;border:2px solid rgba(255,193,7,.4);max-width:260px}
+.rpt-logo-box img{height:90px;width:auto;max-width:240px;display:block;object-fit:contain}
+.rpt-meta{text-align:left;font-size:.85rem;color:#cbd5e1;background:rgba(255,255,255,.05);border:1px solid rgba(255,193,7,.25);border-radius:14px;padding:14px 20px}
+.rpt-meta-row{margin-bottom:8px;display:flex;justify-content:space-between;gap:20px;align-items:center;flex-wrap:wrap}
+.rpt-meta-row:last-child{margin-bottom:0}
+.rpt-meta-row span{color:#cbd5e1;font-size:.78rem;font-weight:700}
+.rpt-meta-row b{color:#ffc107;font-family:'Orbitron',sans-serif;letter-spacing:1px;font-size:.95rem}
+.rpt-cover-title{text-align:center;padding:20px 0}
+.rpt-cover-title h2{font-size:2.5rem;font-weight:900;color:#fff;margin-bottom:10px}
+.rpt-cover-title h2 span{background:linear-gradient(135deg,#ffc107,#ffd54f);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.rpt-cover-title p{color:rgba(255,255,255,.85);font-size:1rem;font-weight:600}
+.rpt-cover-badge{display:inline-flex;align-items:center;gap:10px;background:rgba(255,193,7,.15);border:1px solid rgba(255,193,7,.5);padding:10px 24px;border-radius:50px;color:#ffc107;font-weight:800;font-size:.85rem;margin-top:15px}
+
+.rpt-barcode-section{background:#fff;padding:20px 45px;text-align:center;border-bottom:1px solid #e5e7eb}
+.rpt-barcode-section h4{font-size:.85rem;font-weight:900;color:#1a2340;margin-bottom:10px;letter-spacing:1px}
+.rpt-barcode-section svg{max-width:100%;height:auto;display:block;margin:0 auto}
+.rpt-barcode-code{font-family:'Orbitron',sans-serif;font-size:1.1rem;font-weight:900;color:#1a2340;letter-spacing:3px;margin-top:8px}
+
+.rpt-section{padding:32px 45px;border-bottom:1px solid #e5e7eb}
+.rpt-h{display:flex;align-items:center;gap:12px;font-size:1.15rem;font-weight:900;color:#1a2340;margin-bottom:20px;padding-bottom:10px;border-bottom:3px solid #ffc107}
+.rpt-h i{width:38px;height:38px;background:linear-gradient(135deg,#ffc107,#f9a825);color:#1a2340;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:.95rem}
+.rpt-info-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.rpt-info-item{background:#f8f9fc;border:1.5px solid #e5e7eb;border-radius:12px;padding:12px 15px}
+.rpt-info-label{font-size:.72rem;color:#64748b;font-weight:800;text-transform:uppercase;letter-spacing:.5px}
+.rpt-info-value{font-size:.95rem;color:#1a2340;font-weight:800;word-break:break-word}
+.rpt-cat{margin-bottom:18px}
+.rpt-cat-title{background:linear-gradient(135deg,#1a2340,#0f1628);color:#ffc107;padding:8px 16px;border-radius:10px;font-size:.9rem;font-weight:900;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.rpt-item-row{display:grid;grid-template-columns:1fr 130px 1fr;gap:10px;padding:8px 12px;background:#fff;border:1.5px solid #f1f5f9;border-radius:10px;font-size:.85rem;align-items:center}
+.rpt-item-name{font-weight:700;color:#1a2340}
+.rpt-item-status{font-weight:900;font-size:.75rem;padding:4px 12px;border-radius:50px;text-align:center}
+.rpt-item-status.good{background:#dcfce7;color:#15803d}
+.rpt-item-status.warn{background:#fef3c7;color:#b45309}
+.rpt-item-status.bad{background:#fee2e2;color:#b91c1c}
+.rpt-item-status.na{background:#f1f5f9;color:#64748b}
+.rpt-item-note{color:#64748b;font-size:.78rem;font-weight:600;text-align:left}
+.rpt-empty{text-align:center;color:#94a3b8;font-weight:700;padding:25px;background:#f8f9fc;border-radius:12px}
+.rpt-text-block{background:#f8f9fc;border:1.5px solid #e5e7eb;border-radius:12px;padding:15px 18px;line-height:1.9;color:#1a2340;font-size:.9rem;font-weight:600;white-space:pre-wrap;margin-bottom:12px}
+.rpt-summary-card{background:linear-gradient(135deg,#fff8e1,#fff3c4);border:2px solid #ffe082;border-radius:18px;padding:25px;display:flex;align-items:center;gap:30px;flex-wrap:wrap}
+.rpt-score-circle{width:130px;height:130px;border-radius:50%;background:linear-gradient(135deg,#1a2340,#0f1628);display:flex;align-items:center;justify-content:center;flex-direction:column;color:#fff;flex-shrink:0}
+.rpt-score-num{font-family:'Orbitron',sans-serif;font-size:2.6rem;font-weight:900;line-height:1}
+.rpt-score-circle small{font-size:.7rem;color:#cbd5e1;font-weight:700;margin-top:2px}
+.rpt-summary-info{flex:1;min-width:220px}
+.rpt-summary-info h3{font-size:1.3rem;font-weight:900;margin-bottom:12px}
+.rpt-stats-row{display:flex;gap:10px;flex-wrap:wrap}
+.rpt-stat{padding:8px 14px;border-radius:10px;font-weight:900;font-size:.8rem;background:#fff;border:1.5px solid #e5e7eb;display:flex;align-items:center;gap:6px}
+.rpt-stat .num{font-family:'Orbitron',sans-serif;font-size:1.1rem}
+.rpt-stat.good{color:#15803d;border-color:#86efac}
+.rpt-stat.warn{color:#b45309;border-color:#fcd34d}
+.rpt-stat.bad{color:#b91c1c;border-color:#fca5a5}
+.rpt-stat.na{color:#64748b}
+.rpt-recommendation{background:#1a2340;color:#fff;padding:20px 25px;border-radius:16px;margin-top:20px;display:flex;align-items:center;gap:15px}
+.rpt-recommendation i{font-size:2rem;color:#ffc107;flex-shrink:0}
+.rpt-recommendation div b{color:#ffc107;display:block;margin-bottom:4px;font-size:.85rem}
+.rpt-photos{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.rpt-photo{border:2px solid #e5e7eb;border-radius:10px;overflow:hidden;background:#f8f9fc}
+.rpt-photo img{width:100%;height:130px;object-fit:cover;display:block}
+.rpt-photo .cap{padding:6px 8px;font-size:.7rem;font-weight:800;color:#1a2340;text-align:center;background:#fff}
+.rpt-photo .cap span{display:block;color:#64748b;font-weight:600;font-size:.65rem}
+
+.rpt-diagrams{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px}
+.rpt-diagram-box{background:#f8f9fc;border:2px solid #e5e7eb;border-radius:14px;padding:12px;position:relative}
+.rpt-diagram-box h5{font-size:.85rem;font-weight:900;color:#1a2340;margin-bottom:8px;text-align:center}
+.rpt-diagram-box svg{width:100%;height:auto;display:block;max-height:180px}
+.rpt-diagram-box .rpt-car-body{fill:#1a2340;stroke:#0f1628;stroke-width:1.5}
+.rpt-diagram-box .rpt-car-window{fill:#e2e8f0}
+.rpt-diagram-box .rpt-car-wheel{fill:#0f1628}
+.rpt-diagram-box .rpt-car-light{fill:#ffc107}
+.rpt-diagram-box .rpt-marker{fill:#dc2626;stroke:#fff;stroke-width:2}
+.rpt-diagram-box .rpt-marker-number{fill:#fff;font-size:11px;font-weight:900;text-anchor:middle;font-family:'Cairo',sans-serif}
+.rpt-markers-list{margin-top:8px;display:flex;flex-direction:column;gap:5px;font-size:.78rem}
+.rpt-marker-row{display:flex;gap:8px;align-items:center;background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:5px 10px;color:#1a2340;font-weight:700}
+.rpt-marker-row .n{width:22px;height:22px;background:#dc2626;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:.7rem;flex-shrink:0;font-family:'Orbitron',sans-serif}
+
+.rpt-signatures{display:grid;grid-template-columns:1fr 1fr;gap:30px;padding:30px 45px;background:#f8f9fc;border-top:2px dashed #e5e7eb}
+.rpt-sig-box{text-align:center}
+.rpt-sig-box .line{border-bottom:2px solid #1a2340;height:60px;margin-bottom:8px;position:relative}
+.rpt-sig-box .stamp{position:absolute;bottom:5px;left:50%;transform:translateX(-50%) rotate(-15deg);border:3px solid #ffc107;color:#ffc107;border-radius:50%;width:60px;height:60px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:.65rem;opacity:.5;font-family:'Orbitron',sans-serif}
+.rpt-sig-box .name{font-weight:900;color:#1a2340;font-size:.9rem}
+.rpt-sig-box .role{color:#64748b;font-size:.75rem;font-weight:700}
+
+.rpt-footer{background:linear-gradient(135deg,#0f1628,#1a2340);color:#fff;padding:22px 45px;display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap;font-size:.8rem}
+.rpt-footer-left{display:flex;align-items:center;gap:14px}
+.rpt-footer-logo{background:#fff;padding:5px 10px;border-radius:10px;display:flex;align-items:center;justify-content:center}
+.rpt-footer-logo img{height:40px;width:auto;display:block}
+.rpt-footer .brand-f{font-family:'Orbitron',sans-serif;font-weight:900;font-size:1.1rem;color:#ffc107;letter-spacing:2px}
+.rpt-footer .info b{color:#fff}
+
+.dl-overlay{position:fixed;inset:0;background:rgba(15,22,40,.9);display:none;align-items:center;justify-content:center;z-index:99999;flex-direction:column;gap:20px;color:#fff;font-weight:800}
+.dl-overlay.active{display:flex}
+.dl-spinner{width:70px;height:70px;border:5px solid rgba(255,193,7,.2);border-top-color:#ffc107;border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.dl-text{color:#ffc107;font-size:1.05rem}
+
+.toast{position:fixed;bottom:110px;left:50%;transform:translateX(-50%) translateY(80px);background:#1a2340;color:#fff;padding:14px 28px;border-radius:50px;font-weight:800;font-size:.9rem;z-index:100000;opacity:0;pointer-events:none;display:flex;align-items:center;gap:10px;transition:all .4s}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast i{color:var(--gold)}
+
+@media (max-width:768px){
+.admin-content{padding:18px 14px}
+.admin-tabs{padding:10px 14px;top:70px}
+.admin-tab{padding:10px 14px;font-size:.76rem}
+.admin-header{padding:14px 16px}
+.brand h2{font-size:1rem}
+.brand-logo{width:42px;height:42px}
+.code-pill{font-size:.7rem;padding:6px 12px}
+.header-actions button,.header-actions a{padding:8px 12px;font-size:.75rem}
+.textarea-group{grid-template-columns:1fr}
+.diagram-grid{grid-template-columns:1fr}
+.admin-footer-bar{padding:14px;flex-direction:column;align-items:stretch}
+.live-score{justify-content:center}
+.admin-footer-bar > div:last-child{display:flex;justify-content:center;flex-wrap:wrap;gap:8px}
+.rpt-cover{padding:30px 22px 25px}
+.rpt-cover-top{flex-direction:column;gap:16px}
+.rpt-logo-box img{height:60px}
+.rpt-section{padding:22px 20px}
+.rpt-info-grid{grid-template-columns:1fr}
+.rpt-item-row{grid-template-columns:1fr}
+.rpt-photos{grid-template-columns:repeat(2,1fr)}
+.rpt-signatures{grid-template-columns:1fr;padding:20px}
+.rpt-diagrams{grid-template-columns:1fr}
+.rpt-footer{padding:18px 20px;flex-direction:column;text-align:center;gap:10px}
+.rpt-barcode-section{padding:15px 20px}
+}
+</style>
+</head>
+<body>
+
+<div class="login-screen" id="loginScreen">
+<div class="login-box">
+<div class="login-logo"><i class="fas fa-user-shield"></i></div>
+<h1>CHECK CAR ADMIN</h1>
+<p class="sub">لوحة الفاحص — الدخول محمي</p>
+<div class="login-err" id="loginErr">كلمة المرور غير صحيحة</div>
+<label>كلمة المرور</label>
+<input type="password" id="pwInput" placeholder="••••••••" autofocus>
+<button id="loginBtn"><i class="fas fa-sign-in-alt"></i> دخول</button>
+<p class="login-hint">كلمة المرور: <strong>checkcar2025</strong></p>
+</div>
+</div>
+
+<div class="dashboard" id="dashboard">
+<header class="admin-header">
+<div class="brand">
+<div class="brand-logo" id="headerLogo"><i class="fas fa-car-side"></i></div>
+<div><h2>CHECK CAR</h2><span>لوحة الفاحص</span></div>
+</div>
+<div class="code-pill" id="currentCodePill">CC-YYMMDD-XXXX</div>
+<div class="header-actions">
+<button class="upload-logo" id="openLogoBtn"><i class="fas fa-image"></i> اللوجو</button>
+<a href="index.html" target="_blank"><i class="fas fa-globe"></i> الموقع</a>
+<button id="newSessionBtn"><i class="fas fa-plus"></i> فحص جديد</button>
+<button class="logout" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> خروج</button>
+</div>
+</header>
+
+<nav class="admin-tabs">
+<button class="admin-tab active" data-tab="client"><i class="fas fa-user"></i> العميل</button>
+<button class="admin-tab" data-tab="vehicle"><i class="fas fa-car"></i> بيانات السيارة</button>
+<button class="admin-tab" data-tab="checklist"><i class="fas fa-list-check"></i> تقرير الحالة</button>
+<button class="admin-tab" data-tab="exterior"><i class="fas fa-car-burst"></i> الحالة الخارجية</button>
+<button class="admin-tab" data-tab="notes"><i class="fas fa-note-sticky"></i> ملاحظات</button>
+<button class="admin-tab" data-tab="files"><i class="fas fa-paperclip"></i> ملفات</button>
+<button class="admin-tab" data-tab="share"><i class="fas fa-share-nodes"></i> مشاركة</button>
+</nav>
+
+<main class="admin-content">
+
+<section class="pane active" data-pane="client">
+<div class="section-bar"><i class="fas fa-user"></i> بيانات العميل</div>
+<div class="form-grid">
+<div class="field"><label><i class="fas fa-user"></i> اسم العميل</label><input id="f_clientName" placeholder="اسم العميل"></div>
+<div class="field"><label><i class="fas fa-phone"></i> تليفون العميل</label><input id="f_clientPhone" placeholder="01xxxxxxxxx"></div>
+<div class="field"><label><i class="fas fa-envelope"></i> البريد الإلكتروني</label><input id="f_clientEmail" type="email" placeholder="example@mail.com"></div>
+<div class="field"><label><i class="fas fa-calendar-day"></i> تاريخ الفحص</label><input id="f_date" type="date"></div>
+<div class="field full"><label><i class="fas fa-user-tie"></i> اسم الفاحص</label><input id="f_inspectorName" value="م. إيهاب حلمي / م. شادي حلمي"></div>
+</div>
+</section>
+
+<section class="pane" data-pane="vehicle">
+<div class="section-bar"><i class="fas fa-car"></i> بيانات السيارة</div>
+<div class="form-grid">
+<div class="field"><label><i class="fas fa-heart"></i> الحالة</label><input id="f_condition" placeholder="جيدة / ممتازة"></div>
+<div class="field"><label><i class="fas fa-hashtag"></i> اللوحة</label><input id="f_plate" placeholder="أ ب ج 1234"></div>
+<div class="field"><label><i class="fas fa-trademark"></i> الماركة</label><input id="f_make" placeholder="Toyota"></div>
+<div class="field"><label><i class="fas fa-car-side"></i> الموديل</label><input id="f_model" placeholder="Corolla"></div>
+<div class="field"><label><i class="fas fa-layer-group"></i> الفئة</label><input id="f_category" placeholder="سيدان / SUV"></div>
+<div class="field"><label><i class="fas fa-list"></i> المواصفات</label><input id="f_specs" placeholder="المواصفات التفصيلية"></div>
+<div class="field"><label><i class="fas fa-gears"></i> الفتيس</label><select id="f_trans"><option value="">اختر</option><option>يدوي</option><option>أوتوماتيك</option><option>CVT</option><option>DSG</option></select></div>
+<div class="field"><label><i class="fas fa-engine"></i> حجم المحرك</label><input id="f_engine" placeholder="1600 CC"></div>
+<div class="field"><label><i class="fas fa-circle-dot"></i> عدد السلندرات</label><select id="f_cylinders"><option value="">اختر</option><option>3</option><option>4</option><option>6</option><option>8</option><option>10</option><option>12</option></select></div>
+<div class="field"><label><i class="fas fa-gas-pump"></i> نوع الوقود</label><select id="f_fuel"><option value="">اختر</option><option>بنزين 80</option><option>بنزين 92</option><option>بنزين 95</option><option>ديزل</option><option>هايبرد</option><option>كهربائي</option></select></div>
+<div class="field"><label><i class="fas fa-shield"></i> وسائد هوائية</label><select id="f_airbags"><option value="">اختر</option><option>نعم</option><option>لا</option></select></div>
+<div class="field"><label><i class="fas fa-wind"></i> مكيف هواء</label><select id="f_ac"><option value="">اختر</option><option>يعمل</option><option>لا يعمل</option><option>يحتاج صيانة</option></select></div>
+<div class="field"><label><i class="fas fa-key"></i> اقفال عن بعد</label><select id="f_remoteLock"><option value="">اختر</option><option>نعم</option><option>لا</option></select></div>
+<div class="field"><label><i class="fas fa-circle"></i> جنوط</label><select id="f_rims"><option value="">اختر</option><option>أصلية</option><option>غير أصلية</option><option>مكسورة</option></select></div>
+<div class="field"><label><i class="fas fa-gauge-high"></i> نظام ABS</label><select id="f_abs"><option value="">اختر</option><option>يعمل</option><option>لا يعمل</option></select></div>
+<div class="field"><label><i class="fas fa-steering-wheel"></i> تحكم دريكسيون</label><select id="f_steering"><option value="">اختر</option><option>يعمل</option><option>يحتاج صيانة</option><option>لا يعمل</option></select></div>
+<div class="field full"><label><i class="fas fa-fingerprint"></i> رقم الشاسيه VIN</label><input id="f_vin" placeholder="JTDBR32E..."></div>
+<div class="field"><label><i class="fas fa-palette"></i> اللون</label><input id="f_color" placeholder="أبيض"></div>
+<div class="field"><label><i class="fas fa-gauge"></i> العداد (كم)</label><input id="f_mileage" type="number" placeholder="85000"></div>
+</div>
+</section>
+
+<section class="pane" data-pane="checklist">
+<div class="pane-header">
+<h3><i class="fas fa-list-check"></i> تقرير حالة السيارة</h3>
+<div style="display:flex;gap:8px;flex-wrap:wrap">
+<button class="btn btn-outline" id="markAllGood"><i class="fas fa-check-double"></i> الكل جيد</button>
+<button class="btn btn-danger" id="resetChecklist"><i class="fas fa-rotate-left"></i> إعادة تعيين</button>
+</div>
+</div>
+<div id="checklistContainer"></div>
+</section>
+
+<section class="pane" data-pane="exterior">
+<div class="section-bar orange"><i class="fas fa-car-burst"></i> الحالة الخارجية — اضغط على أي نقطة</div>
+<div class="car-diagram-section">
+<div class="diagram-grid">
+<div class="diagram-card"><h4><i class="fas fa-arrow-right"></i> الجانب الأيمن</h4><div class="car-svg-wrap" data-view="right"><svg viewBox="0 0 400 220"><rect x="20" y="40" width="360" height="140" rx="20" class="car-body"/><path d="M 80 40 L 110 70 L 290 70 L 320 40 Z" class="car-window"/><path d="M 120 70 L 140 40 L 260 40 L 280 70 Z" class="car-window"/><circle cx="100" cy="170" r="30" class="car-wheel"/><circle cx="100" cy="170" r="14" fill="#94a3b8"/><circle cx="300" cy="170" r="30" class="car-wheel"/><circle cx="300" cy="170" r="14" fill="#94a3b8"/><circle cx="360" cy="90" r="8" class="car-light"/><circle cx="40" cy="90" r="8" class="car-light"/><text x="200" y="130" text-anchor="middle" font-size="14" fill="#ffc107" font-weight="900">يمين</text></svg></div><div class="markers-list" data-markers="right"></div></div>
+<div class="diagram-card"><h4><i class="fas fa-arrow-left"></i> الجانب الأيسر</h4><div class="car-svg-wrap" data-view="left"><svg viewBox="0 0 400 220"><rect x="20" y="40" width="360" height="140" rx="20" class="car-body"/><path d="M 80 40 L 110 70 L 290 70 L 320 40 Z" class="car-window"/><path d="M 120 70 L 140 40 L 260 40 L 280 70 Z" class="car-window"/><circle cx="100" cy="170" r="30" class="car-wheel"/><circle cx="100" cy="170" r="14" fill="#94a3b8"/><circle cx="300" cy="170" r="30" class="car-wheel"/><circle cx="300" cy="170" r="14" fill="#94a3b8"/><circle cx="360" cy="90" r="8" class="car-light"/><circle cx="40" cy="90" r="8" class="car-light"/><text x="200" y="130" text-anchor="middle" font-size="14" fill="#ffc107" font-weight="900">يسار</text></svg></div><div class="markers-list" data-markers="left"></div></div>
+<div class="diagram-card"><h4><i class="fas fa-arrow-up"></i> الجانب العلوي</h4><div class="car-svg-wrap" data-view="top"><svg viewBox="0 0 400 220"><rect x="150" y="15" width="100" height="190" rx="30" class="car-body"/><path d="M 165 60 L 235 60 L 245 90 L 155 90 Z" class="car-window"/><path d="M 165 130 L 235 130 L 245 160 L 155 160 Z" class="car-window"/><rect x="170" y="100" width="60" height="22" rx="6" fill="#0f1628"/><circle cx="175" cy="15" r="8" class="car-light"/><circle cx="225" cy="15" r="8" class="car-light"/><text x="200" y="200" text-anchor="middle" font-size="12" fill="#ffc107" font-weight="900">أمامي →</text></svg></div><div class="markers-list" data-markers="top"></div></div>
+<div class="diagram-card"><h4><i class="fas fa-car"></i> الجانب الأمامي</h4><div class="car-svg-wrap" data-view="front"><svg viewBox="0 0 400 220"><rect x="80" y="50" width="240" height="120" rx="20" class="car-body"/><rect x="100" y="70" width="200" height="60" rx="10" class="car-window"/><rect x="110" y="145" width="180" height="15" rx="4" fill="#0f1628"/><circle cx="120" cy="80" r="10" class="car-light"/><circle cx="280" cy="80" r="10" class="car-light"/><circle cx="130" cy="170" r="18" fill="#1a2340"/><circle cx="270" cy="170" r="18" fill="#1a2340"/><text x="200" y="115" text-anchor="middle" font-size="14" fill="#ffc107" font-weight="900">أمامي</text></svg></div><div class="markers-list" data-markers="front"></div></div>
+<div class="diagram-card"><h4><i class="fas fa-car-rear"></i> الجانب الخلفي</h4><div class="car-svg-wrap" data-view="back"><svg viewBox="0 0 400 220"><rect x="80" y="50" width="240" height="120" rx="20" class="car-body"/><rect x="100" y="70" width="200" height="60" rx="10" class="car-window"/><rect x="110" y="145" width="180" height="15" rx="4" fill="#0f1628"/><circle cx="120" cy="80" r="10" fill="#c62828"/><circle cx="280" cy="80" r="10" fill="#c62828"/><circle cx="130" cy="170" r="18" fill="#1a2340"/><circle cx="270" cy="170" r="18" fill="#1a2340"/><text x="200" y="115" text-anchor="middle" font-size="14" fill="#ffc107" font-weight="900">خلفي</text></svg></div><div class="markers-list" data-markers="back"></div></div>
+</div>
+</div>
+<div class="section-bar"><i class="fas fa-pen"></i> ملاحظات تفصيلية</div>
+<div class="textarea-group">
+<div class="textarea-item"><label><i class="fas fa-arrow-up"></i> مقدمة السيارة</label><textarea id="f_front"></textarea></div>
+<div class="textarea-item"><label><i class="fas fa-arrow-right"></i> الجانب الأيمن</label><textarea id="f_right"></textarea></div>
+<div class="textarea-item"><label><i class="fas fa-arrow-left"></i> الجانب الأيسر</label><textarea id="f_left"></textarea></div>
+<div class="textarea-item"><label><i class="fas fa-arrow-down"></i> خلفية السيارة</label><textarea id="f_back"></textarea></div>
+</div>
+</section>
+
+<section class="pane" data-pane="notes">
+<div class="section-bar navy"><i class="fas fa-note-sticky"></i> ملاحظات عامة</div>
+<div class="field full" style="margin-bottom:18px"><label><i class="fas fa-comment-dots"></i> ملاحظات الفاحص</label><textarea id="f_notes" rows="10"></textarea></div>
+<div class="field full"><label><i class="fas fa-clipboard-check"></i> التوصية النهائية</label><textarea id="f_recommendation" rows="4"></textarea></div>
+</section>
+
+<section class="pane" data-pane="files">
+<div class="pane-header">
+<h3><i class="fas fa-paperclip"></i> ملفات الفحص</h3>
+<select id="fileCatSelect" style="padding:10px 14px;border:2px solid var(--border);border-radius:12px;font-family:'Cairo',sans-serif;font-weight:700;background:var(--white);color:var(--text);outline:none">
+<option>صور السيارة</option><option>رخصة السيارة</option><option>رخصة القيادة</option><option>وثيقة التأمين</option><option>تقرير الفحص الفني</option><option>أخرى</option>
+</select>
+</div>
+<div class="files-drop" id="filesDrop">
+<i class="fas fa-cloud-arrow-up"></i>
+<h3>اسحب الملفات هنا أو اضغط</h3>
+<p>صور أو PDF — حتى 5MB للملف</p>
+<input type="file" id="filesInput" multiple accept="image/*,application/pdf" hidden>
+</div>
+<div class="files-grid" id="filesGrid"></div>
+</section>
+
+<section class="pane" data-pane="share">
+<div class="pane-header"><h3><i class="fas fa-share-nodes"></i> مشاركة كود الفحص</h3></div>
+<p style="color:var(--text-gray);font-weight:700;margin-bottom:20px">شارك الكود مع العميل لمتابعة الفحص.</p>
+<div style="background:var(--white);border:2px solid var(--border);border-radius:20px;padding:28px;margin-bottom:20px">
+<div style="font-size:.8rem;color:var(--text-gray);font-weight:800;margin-bottom:8px">كود الفحص الحالي</div>
+<div style="font-family:'Orbitron',sans-serif;font-size:1.8rem;font-weight:900;color:var(--gold-dark);letter-spacing:3px;text-align:center;padding:22px;background:linear-gradient(135deg,rgba(255,193,7,.1),rgba(249,168,37,.05));border-radius:16px;border:2px dashed rgba(255,193,7,.4);word-break:break-all" id="shareCode">CC-YYMMDD-XXXX</div>
+<div style="font-size:.75rem;color:var(--text-light);font-weight:700;text-align:center;margin-top:10px">الصيغة: CC-تاريخ-كود عشوائي</div>
+<div id="shareBarcode" style="text-align:center;margin-top:20px"></div>
+</div>
+<div style="display:flex;gap:12px;flex-wrap:wrap">
+<button class="btn btn-outline" id="copyCodeBtn"><i class="fas fa-copy"></i> نسخ الكود</button>
+<button class="btn btn-outline" id="copyLinkBtn"><i class="fas fa-link"></i> نسخ الرابط</button>
+<button class="btn btn-wa" id="shareWaBtn"><i class="fab fa-whatsapp"></i> إرسال واتساب</button>
+</div>
+</section>
+
+</main>
+
+<div class="admin-footer-bar">
+<div class="live-score">
+<div class="circle" id="liveScore">0</div>
+<div class="info"><div>التقييم اللحظي</div><div id="liveScoreText">بانتظار الفحص</div></div>
+</div>
+<div style="display:flex;gap:10px;flex-wrap:wrap">
+<button class="btn btn-outline" id="saveBtn"><i class="fas fa-save"></i> حفظ</button>
+<button class="btn btn-dark" id="sendReportBtn"><i class="fab fa-whatsapp"></i> إرسال للعميل</button>
+<button class="btn btn-primary" id="previewBtn"><i class="fas fa-eye"></i> معاينة التقرير</button>
+</div>
+</div>
+</div>
+
+<div class="logo-modal" id="logoModal">
+<div class="logo-modal-box">
+<h3><i class="fas fa-image"></i> لوجو التقرير</h3>
+<p class="sub">ارفع اللوجو ليظهر في التقارير والهيدر</p>
+<div class="logo-preview" id="logoPreview"><i class="fas fa-cloud-arrow-up"></i></div>
+<div class="logo-btns">
+<button class="logo-btn upload" id="logoUploadBtn"><i class="fas fa-upload"></i> اختار صورة</button>
+<button class="logo-btn remove" id="logoRemoveBtn"><i class="fas fa-trash"></i> حذف</button>
+</div>
+<input type="file" id="logoInput" accept="image/*" hidden>
+<button class="logo-btn close" id="logoCloseBtn"><i class="fas fa-times"></i> إغلاق</button>
+</div>
+</div>
+
+<div class="report-modal" id="reportModal">
+<div class="report-modal-inner">
+<div class="report-actions">
+<button class="cl" id="closeReportBtn"><i class="fas fa-times"></i> إغلاق</button>
+<button class="dl" id="downloadPdfBtn"><i class="fas fa-file-pdf"></i> تحميل PDF</button>
+</div>
+<div id="reportDoc" class="report-doc"></div>
+</div>
+</div>
+
+<div class="dl-overlay" id="dlOverlay">
+<div class="dl-spinner"></div>
+<div class="dl-text">جاري تجهيز التقرير...</div>
+</div>
+
+<div class="toast" id="toast"><i class="fas fa-circle-check"></i> <span></span></div>
+
+<script>
+var ADMIN_PASSWORD = 'checkcar2025';
+var ADMIN_KEY = 'checkcar_is_admin';
+var CODE_KEY = 'checkcar_current_code';
+var STORAGE_KEY = 'checkcar_files_v1';
+var REPORT_KEY = 'checkcar_report_data';
+var LOGO_KEY = 'checkcar_logo_base64';
+var MAX_SIZE = 5 * 1024 * 1024;
+
+function $(id){ return document.getElementById(id); }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function fmtSize(b){ if(b<1024) return b+' B'; if(b<1048576) return (b/1024).toFixed(0)+' KB'; return (b/1048576).toFixed(1)+' MB'; }
+
+function toast(msg, type){
+  type = type || 'success';
+  var t = $('toast');
+  t.querySelector('span').textContent = msg;
+  t.querySelector('i').className = 'fas fa-' + (type === 'error' ? 'circle-exclamation' : 'circle-check');
+  t.classList.add('show');
+  clearTimeout(t._tm);
+  t._tm = setTimeout(function(){ t.classList.remove('show'); }, 2800);
+}
+
+function loadAll(){ try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch(e){ return {}; } }
+function saveAll(d){ try { localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); } catch(e){ toast('المساحة ممتلئة','error'); } }
+function loadReport(){ try { return JSON.parse(localStorage.getItem(REPORT_KEY) || '{}'); } catch(e){ return {}; } }
+function saveReport(d){ try { localStorage.setItem(REPORT_KEY, JSON.stringify(d)); } catch(e){} }
+
+/* ============ CODE GENERATION (بدون سيريال) ============ */
+function generateInspectionCode(){
+  var d = new Date();
+  var yy = String(d.getFullYear()).slice(-2);
+  var mm = String(d.getMonth()+1).padStart(2,'0');
+  var dd = String(d.getDate()).padStart(2,'0');
+  var chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  var rand = '';
+  for (var i = 0; i < 4; i++) rand += chars[Math.floor(Math.random() * chars.length)];
+  return 'CC-' + yy + mm + dd + '-' + rand;
+}
+
+/* ============ LOGO ============ */
+function getLogo(){ return localStorage.getItem(LOGO_KEY) || ''; }
+function setLogo(base64){
+  if (base64) localStorage.setItem(LOGO_KEY, base64);
+  else localStorage.removeItem(LOGO_KEY);
+  renderLogoPreview();
+  updateHeaderLogo();
+}
+function updateHeaderLogo(){
+  var logo = getLogo();
+  var el = $('headerLogo');
+  if (logo) el.innerHTML = '<img src="' + logo + '" alt="Logo">';
+  else el.innerHTML = '<i class="fas fa-car-side"></i>';
+}
+function renderLogoPreview(){
+  var logo = getLogo();
+  var el = $('logoPreview');
+  if (logo) el.innerHTML = '<img src="' + logo + '" alt="Logo">';
+  else el.innerHTML = '<i class="fas fa-cloud-arrow-up"></i>';
+}
+
+function isAuth(){ return localStorage.getItem(ADMIN_KEY) === 'true'; }
+
+$('loginBtn').addEventListener('click', function(){
+  var pw = $('pwInput').value;
+  if (pw === ADMIN_PASSWORD){
+    localStorage.setItem(ADMIN_KEY, 'true');
+    $('loginErr').classList.remove('show');
+    $('pwInput').value = '';
+    toast('مرحبًا بك ✓');
+    showDashboard();
+  } else {
+    $('loginErr').classList.add('show');
+  }
+});
+$('pwInput').addEventListener('keypress', function(e){ if (e.key === 'Enter') $('loginBtn').click(); });
+$('logoutBtn').addEventListener('click', function(){
+  if (!confirm('تسجيل الخروج؟')) return;
+  localStorage.removeItem(ADMIN_KEY);
+  location.reload();
+});
+
+var currentCode = '';
+var files = [];
+
+var FIELD_MAP = {
+  f_clientName:'clientName', f_clientPhone:'clientPhone', f_clientEmail:'clientEmail',
+  f_date:'date', f_inspectorName:'inspectorName',
+  f_condition:'condition', f_plate:'plate', f_make:'make', f_model:'model',
+  f_category:'category', f_specs:'specs', f_trans:'transmission', f_engine:'engine',
+  f_cylinders:'cylinders', f_fuel:'fuel', f_airbags:'airbags', f_ac:'ac',
+  f_remoteLock:'remoteLock', f_rims:'rims', f_abs:'abs', f_steering:'steering',
+  f_vin:'vin', f_color:'color', f_mileage:'mileage',
+  f_front:'front', f_right:'right', f_left:'left', f_back:'back',
+  f_notes:'notes', f_recommendation:'recommendation'
+};
+
+function loadFields(){
+  var rd = loadReport();
+  Object.keys(FIELD_MAP).forEach(function(elId){
+    var key = FIELD_MAP[elId];
+    var el = $(elId);
+    if (el && rd[key] != null) el.value = rd[key];
+  });
+  if (!rd.date) $('f_date').value = new Date().toISOString().slice(0,10);
+}
+
+var CHECKLIST = [
+  { key:'mechanical', name:'الحالة الميكانيكية', icon:'fa-gear', items:['حالة الماكينة','حالة ناقل الحركة','نظام الفرامل','نظام الكهرباء','نظام التعليق','العكوس / الدفرانس','فحص الكمبيوتر','فحص السوائل','فحص العفشة'] },
+  { key:'interior', name:'الحالة الداخلية', icon:'fa-couch', items:['التابلوه والعدادات','المقاعد','الفرش الداخلي'] },
+  { key:'chassis', name:'الفحص الفني بالهيكل', icon:'fa-car-side', items:['حالة الشاشية','حالة القوائم','الإيرباج / وسائد الهواء'] }
+];
+
+var STATUS = {
+  good: {label:'جيد ✓'},
+  warn: {label:'يحتاج صيانة ⚠'},
+  bad:  {label:'تالف ✗'},
+  na:   {label:'لا ينطبق'}
+};
+
+function renderChecklist(){
+  var saved = loadReport().checklist || {};
+  $('checklistContainer').innerHTML = CHECKLIST.map(function(cat){
+    var items = cat.items.map(function(item, i){
+      var id = cat.key + '-' + i;
+      var rec = saved[id] || {};
+      var pills = ['good','warn','bad','na'].map(function(s){
+        return '<button type="button" class="status-pill ' + (rec.status === s ? 'selected' : '') + '" data-status="' + s + '" data-item="' + id + '">' + STATUS[s].label + '</button>';
+      }).join('');
+      return '<div class="checklist-item">' +
+        '<div class="item-name">' + esc(item) + '</div>' +
+        '<div class="status-pills">' + pills + '</div>' +
+        '<input class="checklist-note" data-note="' + id + '" placeholder="ملاحظة..." value="' + esc(rec.note || '') + '">' +
+      '</div>';
+    }).join('');
+    return '<div class="checklist-cat">' +
+      '<div class="checklist-cat-head"><span><i class="fas ' + cat.icon + '"></i> ' + esc(cat.name) + '</span><span class="cat-score" data-cat="' + cat.key + '">0 / ' + cat.items.length + '</span></div>' +
+      '<div class="checklist-items">' + items + '</div>' +
+    '</div>';
+  }).join('');
+  updateLiveScore();
+}
+
+function updateLiveScore(){
+  var cl = loadReport().checklist || {};
+  var good=0, warn=0, bad=0, na=0;
+  Object.keys(cl).forEach(function(k){
+    var v = cl[k];
+    if (!v || !v.status) return;
+    if (v.status === 'good') good++;
+    else if (v.status === 'warn') warn++;
+    else if (v.status === 'bad') bad++;
+    else if (v.status === 'na') na++;
+  });
+  var valid = good + warn + bad;
+  var score = valid ? Math.round((good + warn*0.5) / valid * 100) : 0;
+  $('liveScore').textContent = score;
+  $('liveScoreText').textContent = valid ? valid + ' بند — ' + good + '✓ / ' + warn + '⚠ / ' + bad + '✗' : 'بانتظار الفحص';
+  CHECKLIST.forEach(function(cat){
+    var cGood = 0, cTotal = 0;
+    cat.items.forEach(function(_, i){
+      var rec = cl[cat.key + '-' + i];
+      if (rec && rec.status && rec.status !== 'na'){
+        cTotal++;
+        if (rec.status === 'good') cGood++;
+        else if (rec.status === 'warn') cGood += 0.5;
+      }
+    });
+    var el = document.querySelector('[data-cat="' + cat.key + '"]');
+    if (el) el.textContent = (cTotal ? Math.round(cGood/cTotal*100) : 0) + '% (' + cTotal + ')';
+  });
+}
+
+document.addEventListener('click', function(e){
+  var pill = e.target.closest('.status-pill');
+  if (pill){
+    var item = pill.dataset.item;
+    var status = pill.dataset.status;
+    var rd = loadReport();
+    rd.checklist = rd.checklist || {};
+    rd.checklist[item] = rd.checklist[item] || {};
+    rd.checklist[item].status = rd.checklist[item].status === status ? null : status;
+    saveReport(rd);
+    var parent = pill.parentElement;
+    Array.prototype.forEach.call(parent.querySelectorAll('.status-pill'), function(p){ p.classList.remove('selected'); });
+    if (rd.checklist[item].status) pill.classList.add('selected');
+    updateLiveScore();
+    return;
+  }
+  var delMarker = e.target.closest('.del-marker');
+  if (delMarker){
+    var view = delMarker.dataset.view;
+    var idx = parseInt(delMarker.dataset.idx);
+    var markers = getMarkers();
+    if (markers[view] && markers[view][idx]){
+      markers[view].splice(idx, 1);
+      saveMarkers(markers);
+      renderMarkers(view);
+      toast('تم حذف النقطة');
+    }
+    return;
+  }
+  var delFile = e.target.closest('[data-del]');
+  if (delFile){
+    files = files.filter(function(x){ return x.id !== delFile.dataset.del; });
+    renderFiles();
+    persistFiles();
+    toast('تم الحذف');
+    return;
+  }
+});
+
+document.addEventListener('input', function(e){
+  if (e.target.classList.contains('checklist-note')){
+    var id = e.target.dataset.note;
+    var rd = loadReport();
+    rd.checklist = rd.checklist || {};
+    rd.checklist[id] = rd.checklist[id] || {};
+    rd.checklist[id].note = e.target.value;
+    saveReport(rd);
+    return;
+  }
+  if (e.target.matches('.marker-item input')){
+    var view = e.target.dataset.view;
+    var idx = parseInt(e.target.dataset.idx);
+    var markers = getMarkers();
+    if (markers[view] && markers[view][idx]){
+      markers[view][idx].text = e.target.value;
+      saveMarkers(markers);
+    }
+    return;
+  }
+  var elId = e.target.id;
+  if (FIELD_MAP[elId]){
+    var rd = loadReport();
+    rd[FIELD_MAP[elId]] = e.target.value;
+    saveReport(rd);
+  }
+});
+
+document.addEventListener('change', function(e){
+  var elId = e.target.id;
+  if (FIELD_MAP[elId]){
+    var rd = loadReport();
+    rd[FIELD_MAP[elId]] = e.target.value;
+    saveReport(rd);
+  }
+  if (e.target.classList.contains('fname') || e.target.classList.contains('fcat')){
+    var f = files.find(function(x){ return x.id === e.target.dataset.id; });
+    if (!f) return;
+    if (e.target.classList.contains('fname')) f.name = e.target.value.trim() || f.originalName;
+    if (e.target.classList.contains('fcat')) f.cat = e.target.value;
+    persistFiles();
+  }
+});
+
+$('markAllGood').addEventListener('click', function(){
+  if (!confirm('تعليم كل البنود كـ "جيد"؟')) return;
+  var rd = loadReport();
+  rd.checklist = rd.checklist || {};
+  CHECKLIST.forEach(function(cat){
+    cat.items.forEach(function(_, i){
+      var id = cat.key + '-' + i;
+      rd.checklist[id] = rd.checklist[id] || {};
+      rd.checklist[id].status = 'good';
+    });
+  });
+  saveReport(rd);
+  renderChecklist();
+  toast('تم التعليم كـ جيد');
+});
+
+$('resetChecklist').addEventListener('click', function(){
+  if (!confirm('إعادة تعيين القائمة؟')) return;
+  var rd = loadReport();
+  rd.checklist = {};
+  saveReport(rd);
+  renderChecklist();
+  toast('تم إعادة التعيين');
+});
+
+/* CAR MARKERS */
+function getMarkers(){
+  var rd = loadReport();
+  return rd.markers || { right:[], left:[], top:[], front:[], back:[] };
+}
+function saveMarkers(m){
+  var rd = loadReport();
+  rd.markers = m;
+  saveReport(rd);
+}
+
+function renderMarkers(view){
+  var markers = getMarkers();
+  var list = markers[view] || [];
+  var wrap = document.querySelector('.car-svg-wrap[data-view="' + view + '"] svg');
+  var listEl = document.querySelector('.markers-list[data-markers="' + view + '"]');
+  if (!wrap || !listEl) return;
+
+  Array.prototype.forEach.call(wrap.querySelectorAll('.marker, .marker-number'), function(el){ el.remove(); });
+
+  list.forEach(function(m, idx){
+    var circle = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    circle.setAttribute('cx', m.x);
+    circle.setAttribute('cy', m.y);
+    circle.setAttribute('r', 13);
+    circle.setAttribute('class','marker');
+    circle.setAttribute('data-view', view);
+    circle.setAttribute('data-idx', idx);
+    wrap.appendChild(circle);
+
+    var text = document.createElementNS('http://www.w3.org/2000/svg','text');
+    text.setAttribute('x', m.x);
+    text.setAttribute('y', m.y + 4);
+    text.setAttribute('class','marker-number');
+    text.textContent = idx + 1;
+    wrap.appendChild(text);
+  });
+
+  listEl.innerHTML = list.map(function(m, idx){
+    return '<div class="marker-item" data-view="' + view + '" data-idx="' + idx + '">' +
+      '<span class="num">' + (idx+1) + '</span>' +
+      '<input type="text" value="' + esc(m.text || '') + '" placeholder="اكتب الملاحظة..." data-view="' + view + '" data-idx="' + idx + '">' +
+      '<button class="del-marker" data-view="' + view + '" data-idx="' + idx + '"><i class="fas fa-times"></i></button>' +
+    '</div>';
+  }).join('');
+}
+
+function renderAllMarkers(){
+  ['right','left','top','front','back'].forEach(renderMarkers);
+}
+
+Array.prototype.forEach.call(document.querySelectorAll('.car-svg-wrap'), function(wrap){
+  wrap.addEventListener('click', function(e){
+    var svg = wrap.querySelector('svg');
+    if (!svg) return;
+    if (e.target.classList.contains('marker') || e.target.classList.contains('marker-number')) return;
+    var pt = svg.createSVGPoint();
+    pt.x = e.clientX;
+    pt.y = e.clientY;
+    var svgP = pt.matrixTransform(svg.getScreenCTM().inverse());
+    var view = wrap.dataset.view;
+    var markers = getMarkers();
+    markers[view] = markers[view] || [];
+    markers[view].push({ x: Math.round(svgP.x), y: Math.round(svgP.y), text: '' });
+    saveMarkers(markers);
+    renderMarkers(view);
+  });
+});
+
+/* FILES */
+function persistFiles(){
+  var a = loadAll();
+  a[currentCode] = files;
+  saveAll(a);
+}
+
+function renderFiles(){
+  if (!files.length){
+    $('filesGrid').innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--text-gray);font-weight:700;background:var(--white);border-radius:16px;border:2px dashed var(--border)"><i class="fas fa-folder-open" style="font-size:3rem;color:var(--text-light);display:block;margin-bottom:12px"></i>لا توجد ملفات بعد</div>';
+    return;
+  }
+  var cats = ['صور السيارة','رخصة السيارة','رخصة القيادة','وثيقة التأمين','تقرير الفحص الفني','أخرى'];
+  $('filesGrid').innerHTML = files.map(function(f){
+    var thumb = f.isImage
+      ? '<img src="' + f.dataUrl + '" alt=""><span class="tag"><i class="fas fa-image"></i> IMG</span>'
+      : '<i class="fas fa-file-pdf pdf"></i><span class="tag"><i class="fas fa-file-pdf"></i> PDF</span>';
+    var opts = cats.map(function(c){ return '<option ' + (c === f.cat ? 'selected' : '') + '>' + c + '</option>'; }).join('');
+    return '<div class="file-item" data-id="' + f.id + '">' +
+      '<button class="file-del" data-del="' + f.id + '"><i class="fas fa-trash"></i></button>' +
+      '<div class="file-thumb">' + thumb + '</div>' +
+      '<input data-id="' + f.id + '" class="fname" value="' + esc(f.name) + '">' +
+      '<select data-id="' + f.id + '" class="fcat">' + opts + '</select>' +
+      '<div class="size">' + fmtSize(f.size) + '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function handleFiles(list){
+  var cat = $('fileCatSelect').value;
+  Array.prototype.forEach.call(list, function(file){
+    if (file.size > MAX_SIZE){ toast('الملف ' + file.name + ' أكبر من 5MB','error'); return; }
+    var isImg = file.type.indexOf('image/') === 0;
+    var isPdf = file.type === 'application/pdf';
+    if (!isImg && !isPdf){ toast('صيغة غير مدعومة','error'); return; }
+    var r = new FileReader();
+    r.onload = function(ev){
+      files.push({
+        id: Date.now() + '-' + Math.random().toString(36).slice(2,8),
+        name: file.name.replace(/\.[^.]+$/,''),
+        originalName: file.name,
+        cat: cat, size: file.size, type: file.type, isImage: isImg, dataUrl: ev.target.result
+      });
+      renderFiles();
+      persistFiles();
+      toast('تم رفع الملف');
+    };
+    r.readAsDataURL(file);
+  });
+}
+
+$('filesDrop').addEventListener('click', function(){ $('filesInput').click(); });
+$('filesInput').addEventListener('change', function(e){ handleFiles(e.target.files); e.target.value = ''; });
+['dragenter','dragover'].forEach(function(ev){ $('filesDrop').addEventListener(ev, function(e){ e.preventDefault(); $('filesDrop').classList.add('over'); }); });
+['dragleave','drop'].forEach(function(ev){ $('filesDrop').addEventListener(ev, function(e){ e.preventDefault(); $('filesDrop').classList.remove('over'); }); });
+$('filesDrop').addEventListener('drop', function(e){ handleFiles(e.dataTransfer.files); });
+
+/* TABS */
+Array.prototype.forEach.call(document.querySelectorAll('.admin-tab'), function(tab){
+  tab.addEventListener('click', function(){
+    Array.prototype.forEach.call(document.querySelectorAll('.admin-tab'), function(t){ t.classList.remove('active'); });
+    Array.prototype.forEach.call(document.querySelectorAll('.pane'), function(p){ p.classList.remove('active'); });
+    tab.classList.add('active');
+    document.querySelector('[data-pane="' + tab.dataset.tab + '"]').classList.add('active');
+  });
+});
+
+/* REPORT */
+function gatherReport(){
+  var rd = loadReport();
+  return {
+    client: {
+      name: rd.clientName || 'العميل',
+      phone: rd.clientPhone || '—',
+      email: rd.clientEmail || '—',
+      date: rd.date || new Date().toISOString().slice(0,10)
+    },
+    vehicle: {
+      condition: rd.condition || '—', plate: rd.plate || '—',
+      make: rd.make || '—', model: rd.model || '—',
+      category: rd.category || '—', specs: rd.specs || '—',
+      transmission: rd.transmission || '—', engine: rd.engine || '—',
+      cylinders: rd.cylinders || '—', fuel: rd.fuel || '—',
+      airbags: rd.airbags || '—', ac: rd.ac || '—',
+      remoteLock: rd.remoteLock || '—', rims: rd.rims || '—',
+      abs: rd.abs || '—', steering: rd.steering || '—',
+      vin: rd.vin || '—', color: rd.color || '—', mileage: rd.mileage || '—'
+    },
+    exterior: {
+      front: rd.front || '', right: rd.right || '',
+      left: rd.left || '', back: rd.back || ''
+    },
+    checklist: rd.checklist || {},
+    markers: rd.markers || { right:[], left:[], top:[], front:[], back:[] },
+    meta: {
+      inspectorName: rd.inspectorName || 'م. إيهاب حلمي / م. شادي حلمي',
+      notes: rd.notes || '',
+      recommendation: rd.recommendation || '',
+      reportId: currentCode
+    }
+  };
+}
+
+function svgForReport(view, markers){
+  function common(body){
+    return '<svg viewBox="0 0 400 220">' + body + markers.map(function(m, idx){
+      return '<circle cx="' + m.x + '" cy="' + m.y + '" r="13" class="rpt-marker"/><text x="' + m.x + '" y="' + (m.y + 4) + '" class="rpt-marker-number">' + (idx+1) + '</text>';
+    }).join('') + '</svg>';
+  }
+  if (view === 'right' || view === 'left'){
+    var label = view === 'right' ? 'يمين' : 'يسار';
+    return common('<rect x="20" y="40" width="360" height="140" rx="20" class="rpt-car-body"/><path d="M 80 40 L 110 70 L 290 70 L 320 40 Z" class="rpt-car-window"/><path d="M 120 70 L 140 40 L 260 40 L 280 70 Z" class="rpt-car-window"/><circle cx="100" cy="170" r="30" class="rpt-car-wheel"/><circle cx="100" cy="170" r="14" fill="#94a3b8"/><circle cx="300" cy="170" r="30" class="rpt-car-wheel"/><circle cx="300" cy="170" r="14" fill="#94a3b8"/><circle cx="360" cy="90" r="8" class="rpt-car-light"/><circle cx="40" cy="90" r="8" class="rpt-car-light"/><text x="200" y="130" text-anchor="middle" font-size="14" fill="#ffc107" font-weight="900">' + label + '</text>');
+  }
+  if (view === 'top'){
+    return common('<rect x="150" y="15" width="100" height="190" rx="30" class="rpt-car-body"/><path d="M 165 60 L 235 60 L 245 90 L 155 90 Z" class="rpt-car-window"/><path d="M 165 130 L 235 130 L 245 160 L 155 160 Z" class="rpt-car-window"/><rect x="170" y="100" width="60" height="22" rx="6" fill="#0f1628"/><circle cx="175" cy="15" r="8" class="rpt-car-light"/><circle cx="225" cy="15" r="8" class="rpt-car-light"/><text x="200" y="200" text-anchor="middle" font-size="12" fill="#ffc107" font-weight="900">أمامي →</text>');
+  }
+  if (view === 'front'){
+    return common('<rect x="80" y="50" width="240" height="120" rx="20" class="rpt-car-body"/><rect x="100" y="70" width="200" height="60" rx="10" class="rpt-car-window"/><rect x="110" y="145" width="180" height="15" rx="4" fill="#0f1628"/><circle cx="120" cy="80" r="10" class="rpt-car-light"/><circle cx="280" cy="80" r="10" class="rpt-car-light"/><circle cx="130" cy="170" r="18" fill="#1a2340"/><circle cx="270" cy="170" r="18" fill="#1a2340"/><text x="200" y="115" text-anchor="middle" font-size="14" fill="#ffc107" font-weight="900">أمامي</text>');
+  }
+  if (view === 'back'){
+    return common('<rect x="80" y="50" width="240" height="120" rx="20" class="rpt-car-body"/><rect x="100" y="70" width="200" height="60" rx="10" class="rpt-car-window"/><rect x="110" y="145" width="180" height="15" rx="4" fill="#0f1628"/><circle cx="120" cy="80" r="10" fill="#c62828"/><circle cx="280" cy="80" r="10" fill="#c62828"/><circle cx="130" cy="170" r="18" fill="#1a2340"/><circle cx="270" cy="170" r="18" fill="#1a2340"/><text x="200" y="115" text-anchor="middle" font-size="14" fill="#ffc107" font-weight="900">خلفي</text>');
+  }
+  return '';
+}
+
+function buildReportHTML(){
+  var g = gatherReport();
+  var client = g.client, vehicle = g.vehicle, exterior = g.exterior, checklist = g.checklist, markers = g.markers, meta = g.meta;
+  var dateStr = client.date ? new Date(client.date).toLocaleDateString('ar-EG',{year:'numeric',month:'long',day:'numeric'}) : new Date().toLocaleDateString('ar-EG');
+  var good = 0, warn = 0, bad = 0, na = 0;
+  Object.keys(checklist).forEach(function(k){
+    var v = checklist[k];
+    if (!v || !v.status) return;
+    if (v.status === 'good') good++;
+    else if (v.status === 'warn') warn++;
+    else if (v.status === 'bad') bad++;
+    else if (v.status === 'na') na++;
+  });
+  var valid = good + warn + bad;
+  var score = valid ? Math.round((good + warn * 0.5) / valid * 100) : 0;
+  var scoreColor = score >= 85 ? '#16a34a' : score >= 70 ? '#65a30d' : score >= 50 ? '#d97706' : '#dc2626';
+  var verdict = score >= 85 ? 'السيارة بحالة ممتازة' : score >= 70 ? 'السيارة بحالة جيدة' : score >= 50 ? 'السيارة بحالة متوسطة' : 'السيارة بها عيوب';
+
+  var logo = getLogo();
+  var logoHTML = logo ? '<div class="rpt-logo-box"><img src="' + logo + '" alt="Logo"></div>' : '<div class="rpt-logo-box"><i class="fas fa-car-side" style="font-size:3rem;color:#1a2340"></i></div>';
+  var logoFooterHTML = logo ? '<div class="rpt-footer-logo"><img src="' + logo + '" alt="Logo"></div>' : '';
+
+  var checklistHTML = '', anyItems = false;
+  CHECKLIST.forEach(function(cat){
+    var rows = cat.items.map(function(item, i){
+      var rec = checklist[cat.key + '-' + i];
+      if (!rec || !rec.status) return '';
+      anyItems = true;
+      var st = STATUS[rec.status];
+      return '<div class="rpt-item-row">' +
+        '<div class="rpt-item-name">' + esc(item) + '</div>' +
+        '<div class="rpt-item-status ' + rec.status + '">' + st.label + '</div>' +
+        '<div class="rpt-item-note">' + esc(rec.note || '—') + '</div>' +
+      '</div>';
+    }).filter(Boolean).join('');
+    if (rows) checklistHTML += '<div class="rpt-cat"><div class="rpt-cat-title"><i class="fas ' + cat.icon + '"></i>' + esc(cat.name) + '</div>' + rows + '</div>';
+  });
+
+  var diagramsHTML = '';
+  var views = ['right','left','top','front','back'];
+  var viewNames = { right:'الجانب الأيمن', left:'الجانب الأيسر', top:'الجانب العلوي', front:'الجانب الأمامي', back:'الجانب الخلفي' };
+  var hasAnyMarkers = views.some(function(v){ return (markers[v]||[]).length > 0; });
+  if (hasAnyMarkers){
+    diagramsHTML = '<div class="rpt-section"><div class="rpt-h"><i class="fas fa-map-marked-alt"></i> نقاط الحالة الخارجية</div><div class="rpt-diagrams">' +
+      views.filter(function(v){ return (markers[v]||[]).length > 0; }).map(function(v){
+        return '<div class="rpt-diagram-box"><h5>' + viewNames[v] + ' (' + markers[v].length + ' نقطة)</h5>' + svgForReport(v, markers[v]) +
+          '<div class="rpt-markers-list">' + markers[v].map(function(m, i){
+            return '<div class="rpt-marker-row"><span class="n">' + (i+1) + '</span><span>' + esc(m.text || '— بدون وصف —') + '</span></div>';
+          }).join('') + '</div></div>';
+      }).join('') +
+    '</div></div>';
+  }
+
+  var exteriorHTML = '';
+  var hasExterior = exterior.front || exterior.right || exterior.left || exterior.back;
+  if (hasExterior){
+    exteriorHTML = '<div class="rpt-section"><div class="rpt-h"><i class="fas fa-car-burst"></i> ملاحظات الحالة الخارجية</div>' +
+      (exterior.front ? '<div style="margin-bottom:10px"><strong style="color:#c62828;font-weight:900">مقدمة السيارة:</strong><div class="rpt-text-block">' + esc(exterior.front) + '</div></div>' : '') +
+      (exterior.right ? '<div style="margin-bottom:10px"><strong style="color:#c62828;font-weight:900">الجانب الأيمن:</strong><div class="rpt-text-block">' + esc(exterior.right) + '</div></div>' : '') +
+      (exterior.left ? '<div style="margin-bottom:10px"><strong style="color:#c62828;font-weight:900">الجانب الأيسر:</strong><div class="rpt-text-block">' + esc(exterior.left) + '</div></div>' : '') +
+      (exterior.back ? '<div><strong style="color:#c62828;font-weight:900">خلفية السيارة:</strong><div class="rpt-text-block">' + esc(exterior.back) + '</div></div>' : '') +
+    '</div>';
+  }
+
+  var photosHTML = '';
+  var imgs = files.filter(function(f){ return f.isImage; });
+  if (imgs.length){
+    photosHTML = '<div class="rpt-section"><div class="rpt-h"><i class="fas fa-images"></i> صور الفحص (' + imgs.length + ')</div><div class="rpt-photos">' + imgs.slice(0,12).map(function(f){
+      return '<div class="rpt-photo"><img src="' + f.dataUrl + '"><div class="cap">' + esc(f.name) + '<span>' + esc(f.cat) + '</span></div></div>';
+    }).join('') + '</div></div>';
+  }
+  var pdfs = files.filter(function(f){ return !f.isImage; });
+  var pdfsHTML = '';
+  if (pdfs.length){
+    pdfsHTML = '<div class="rpt-section"><div class="rpt-h"><i class="fas fa-file-pdf"></i> مستندات PDF (' + pdfs.length + ')</div><div style="display:flex;flex-direction:column;gap:6px">' + pdfs.map(function(f){
+      return '<div style="padding:8px 14px;background:#f8f9fc;border:1.5px solid #e5e7eb;border-radius:10px;font-weight:700;font-size:.85rem;display:flex;align-items:center;gap:10px"><i class="fas fa-file-pdf" style="color:#dc2626"></i>' + esc(f.name) + ' <span style="color:#64748b;font-size:.75rem">(' + esc(f.cat) + ')</span></div>';
+    }).join('') + '</div></div>';
+  }
+
+  return '<div class="rpt-cover">' +
+    '<div class="rpt-cover-top">' +
+      '<div class="rpt-logo">' + logoHTML + '</div>' +
+      '<div class="rpt-meta">' +
+        '<div class="rpt-meta-row"><span>كود الفحص:</span> <b>' + esc(meta.reportId) + '</b></div>' +
+        '<div class="rpt-meta-row"><span>تاريخ الفحص:</span> <b>' + dateStr + '</b></div>' +
+      '</div>' +
+    '</div>' +
+    '<div class="rpt-cover-title">' +
+      '<h2>تقرير <span>فحص سيارة</span> احترافي</h2>' +
+      '<p>باستخدام أحدث الأجهزة العالمية لفحص السيارات</p>' +
+      '<div class="rpt-cover-badge"><i class="fas fa-certificate"></i> تقرير معتمد من Check Car</div>' +
+    '</div>' +
+  '</div>' +
+
+  '<div class="rpt-barcode-section">' +
+    '<h4>كود الفحص الموثق</h4>' +
+    '<svg id="reportBarcode"></svg>' +
+    '<div class="rpt-barcode-code">' + esc(currentCode) + '</div>' +
+  '</div>' +
+
+  '<div class="rpt-section"><div class="rpt-h"><i class="fas fa-user"></i> بيانات العميل</div><div class="rpt-info-grid">' +
+    '<div class="rpt-info-item"><div class="rpt-info-label">اسم العميل</div><div class="rpt-info-value">' + esc(client.name) + '</div></div>' +
+    '<div class="rpt-info-item"><div class="rpt-info-label">تليفون العميل</div><div class="rpt-info-value">' + esc(client.phone) + '</div></div>' +
+    '<div class="rpt-info-item"><div class="rpt-info-label">البريد الإلكتروني</div><div class="rpt-info-value">' + esc(client.email) + '</div></div>' +
+    '<div class="rpt-info-item"><div class="rpt-info-label">تاريخ الفحص</div><div class="rpt-info-value">' + dateStr + '</div></div>' +
+  '</div></div>' +
+
+  '<div class="rpt-section"><div class="rpt-h"><i class="fas fa-car"></i> بيانات السيارة</div><div class="rpt-info-grid">' +
+    '<div class="rpt-info-item"><div class="rpt-info-label">الحالة</div><div class="rpt-info-value">' + esc(vehicle.condition) + '</div></div>' +
+    '<div class="rpt-info-item"><div class="rpt-info-label">اللوحة</div><div class="rpt-info-value">' + esc(vehicle.plate) + '</div></div>' +
+    '<div class="rpt-info-item"><div class="rpt-info-label">الماركة</div><div class="rpt-info-value">' + esc(vehicle.make) + '</div></div>' +
+    '<div class="rpt-info-item"><div class="rpt-info-label">الموديل</div><div class="rpt-info-value">' + esc(vehicle.model) + '</div></div>' +
+    '<div class="rpt-info-item"><div class="rpt-info-label">الفئة</div><div class="rpt-info-value">' + esc(vehicle.category) + '</div></div>' +
+    '<div class="rpt-info-item"><div class="rpt-info-label">المواصفات</div><div class="rpt-info-value">' + esc(vehicle.specs) + '</div></div>' +
+    '<div class="rpt-info-item"><div class="rpt-info-label">الفتيس</div><div class="rpt-info-value">' + esc(vehicle.transmission) + '</div></div>' +
+    '<div class="rpt-info-item"><div class="rpt-info-label">حجم المحرك</div><div class="rpt-info-value">' + esc(vehicle.engine) + '</div></div>' +
+    '<div class="rpt-info-item"><div class="rpt-info-label">عدد السلندرات</div><div class="rpt-info-value">' + esc(vehicle.cylinders) + '</div></div>' +
+    '<div class="rpt-info-item"><div class="rpt-info-label">نوع الوقود</div><div class="rpt-info-value">' + esc(vehicle.fuel) + '</div></div>' +
+    '<div class="rpt-info-item"><div class="rpt-info-label">وسائد هوائية</div><div class="rpt-info-value">' + esc(vehicle.airbags) + '</div></div>' +
+    '<div class="rpt-info-item"><div class="rpt-info-label">مكيف هواء</div><div class="rpt-info-value">' + esc(vehicle.ac) + '</div></div>' +
+    '<div class="rpt-info-item"><div class="rpt-info-label">اقفال عن بعد</div><div class="rpt-info-value">' + esc(vehicle.remoteLock) + '</div></div>' +
+    '<div class="rpt-info-item"><div class="rpt-info-label">جنوط</div><div class="rpt-info-value">' + esc(vehicle.rims) + '</div></div>' +
+    '<div class="rpt-info-item"><div class="rpt-info-label">نظام ABS</div><div class="rpt-info-value">' + esc(vehicle.abs) + '</div></div>' +
+    '<div class="rpt-info-item"><div class="rpt-info-label">تحكم دريكسيون</div><div class="rpt-info-value">' + esc(vehicle.steering) + '</div></div>' +
+    '<div class="rpt-info-item"><div class="rpt-info-label">رقم الشاسيه (VIN)</div><div class="rpt-info-value">' + esc(vehicle.vin) + '</div></div>' +
+    '<div class="rpt-info-item"><div class="rpt-info-label">اللون</div><div class="rpt-info-value">' + esc(vehicle.color) + '</div></div>' +
+    '<div class="rpt-info-item"><div class="rpt-info-label">العداد (كم)</div><div class="rpt-info-value">' + esc(vehicle.mileage) + '</div></div>' +
+  '</div></div>' +
+
+  '<div class="rpt-section"><div class="rpt-h"><i class="fas fa-chart-simple"></i> الملخص والتقييم</div>' +
+    '<div class="rpt-summary-card">' +
+      '<div class="rpt-score-circle"><div class="rpt-score-num" style="color:' + scoreColor + '">' + score + '</div><small>من 100</small></div>' +
+      '<div class="rpt-summary-info">' +
+        '<h3 style="color:' + scoreColor + '">' + verdict + '</h3>' +
+        '<div class="rpt-stats-row">' +
+          '<div class="rpt-stat good"><span class="num">' + good + '</span> جيد</div>' +
+          '<div class="rpt-stat warn"><span class="num">' + warn + '</span> صيانة</div>' +
+          '<div class="rpt-stat bad"><span class="num">' + bad + '</span> تالف</div>' +
+          '<div class="rpt-stat na"><span class="num">' + na + '</span> لا ينطبق</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>' +
+    (meta.recommendation ? '<div class="rpt-recommendation"><i class="fas fa-clipboard-check"></i><div><b>التوصية النهائية</b><span>' + esc(meta.recommendation) + '</span></div></div>' : '') +
+  '</div>' +
+
+  (anyItems ? '<div class="rpt-section"><div class="rpt-h"><i class="fas fa-clipboard-list"></i> تقرير حالة السيارة</div>' + checklistHTML + '</div>' : '<div class="rpt-section"><div class="rpt-h"><i class="fas fa-clipboard-list"></i> تقرير حالة السيارة</div><div class="rpt-empty">لم يتم تسجيل نتائج الفحص بعد</div></div>') +
+
+  diagramsHTML +
+  exteriorHTML +
+
+  (meta.notes ? '<div class="rpt-section"><div class="rpt-h"><i class="fas fa-note-sticky"></i> ملاحظات الفاحص</div><div style="background:#f8f9fc;border:1.5px solid #e5e7eb;border-radius:12px;padding:15px 18px;line-height:1.9;color:#1a2340;font-size:.9rem;font-weight:600;white-space:pre-wrap">' + esc(meta.notes) + '</div></div>' : '') +
+
+  photosHTML +
+  pdfsHTML +
+
+  '<div class="rpt-signatures">' +
+    '<div class="rpt-sig-box"><div class="line"><div class="stamp">CHECK CAR</div></div><div class="name">م. إيهاب حلمي</div><div class="role">كبير مهندسي الفحص — المؤسس</div></div>' +
+    '<div class="rpt-sig-box"><div class="line"><div class="stamp">CHECK CAR</div></div><div class="name">م. شادي حلمي</div><div class="role">مهندس فحص متخصص</div></div>' +
+  '</div>' +
+
+  '<div class="rpt-footer">' +
+    '<div class="rpt-footer-left">' + logoFooterHTML + '<div class="brand-f">CHECK CAR</div></div>' +
+    '<div class="info">📍 Ehab Helmy &amp; Shady Helmy</div>' +
+    '<div class="info">📞 <b>01141871010</b> | <b>01141871414</b></div>' +
+  '</div>';
+}
+
+function generateBarcode(svgId, code){
+  try {
+    var el = document.getElementById(svgId);
+    if (!el) return;
+    if (typeof JsBarcode === 'undefined'){ console.warn('JsBarcode not loaded'); return; }
+    JsBarcode(el, code, {
+      format: 'CODE128',
+      width: 2,
+      height: 70,
+      displayValue: false,
+      margin: 0,
+      lineColor: '#1a2340',
+      background: '#ffffff'
+    });
+  } catch(err){ console.error('Barcode error:', err); }
+}
+
+function openReport(){
+  $('reportDoc').innerHTML = buildReportHTML();
+  $('reportModal').classList.add('active');
+  document.body.style.overflow = 'hidden';
+  setTimeout(function(){ generateBarcode('reportBarcode', currentCode); }, 150);
+}
+
+$('closeReportBtn').addEventListener('click', function(){
+  $('reportModal').classList.remove('active');
+  document.body.style.overflow = '';
+});
+$('previewBtn').addEventListener('click', openReport);
+
+$('downloadPdfBtn').addEventListener('click', function(){
+  var el = $('reportDoc');
+  var btn = $('downloadPdfBtn');
+  var orig = btn.innerHTML;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري...';
+  btn.disabled = true;
+  $('dlOverlay').classList.add('active');
+  setTimeout(function(){
+    html2canvas(el, { scale: 2, backgroundColor: '#ffffff', useCORS: true, allowTaint: true, logging: false })
+      .then(function(canvas){
+        var jsPDF = window.jspdf.jsPDF;
+        var pdf = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
+        var pageW = pdf.internal.pageSize.getWidth();
+        var pageH = pdf.internal.pageSize.getHeight();
+        var imgW = pageW;
+        var imgH = canvas.height * imgW / canvas.width;
+        var hLeft = imgH, pos = 0;
+        var data = canvas.toDataURL('image/jpeg', 0.92);
+        pdf.addImage(data, 'JPEG', 0, pos, imgW, imgH);
+        hLeft -= pageH;
+        while (hLeft > 0){
+          pos = hLeft - imgH;
+          pdf.addPage();
+          pdf.addImage(data, 'JPEG', 0, pos, imgW, imgH);
+          hLeft -= pageH;
+        }
+        pdf.save('CheckCar_Report_' + currentCode + '_' + new Date().toISOString().slice(0,10) + '.pdf');
+        toast('تم تحميل التقرير ✓');
+        btn.innerHTML = orig;
+        btn.disabled = false;
+        $('dlOverlay').classList.remove('active');
+      })
+      .catch(function(err){
+        console.error(err);
+        toast('خطأ في توليد PDF', 'error');
+        btn.innerHTML = orig;
+        btn.disabled = false;
+        $('dlOverlay').classList.remove('active');
+      });
+  }, 600);
+});
+
+function siteLink(){
+  return location.origin + location.pathname.replace('admin.html', 'index.html') + '#view=' + currentCode;
+}
+
+$('sendReportBtn').addEventListener('click', function(){
+  var rd = loadReport();
+  var msg = '🚗 *Check Car — تقرير فحص سيارة*\n\n👤 *العميل:* ' + (rd.clientName || 'عميل') + '\n🚙 *السيارة:* ' + (rd.make||'') + ' ' + (rd.model||'') + '\n🔑 *كود الفحص:* ' + currentCode + '\n\n🔗 ' + siteLink() + '\n\n📞 01141871010';
+  var phone = rd.clientPhone ? '2' + rd.clientPhone.replace(/^0/,'') : '';
+  window.open('https://wa.me/' + phone + '?text=' + encodeURIComponent(msg), '_blank');
+});
+$('copyCodeBtn').addEventListener('click', function(){
+  if (navigator.clipboard) navigator.clipboard.writeText(currentCode).then(function(){ toast('تم نسخ الكود ✓'); });
+  else { prompt('انسخ الكود:', currentCode); }
+});
+$('copyLinkBtn').addEventListener('click', function(){
+  if (navigator.clipboard) navigator.clipboard.writeText(siteLink()).then(function(){ toast('تم نسخ الرابط ✓'); });
+  else { prompt('انسخ الرابط:', siteLink()); }
+});
+$('shareWaBtn').addEventListener('click', function(){
+  var rd = loadReport();
+  var msg = '🔑 *كود الفحص:* ' + currentCode + '\n🚙 *السيارة:* ' + (rd.make||'') + ' ' + (rd.model||'') + '\n\n🔗 ' + siteLink() + '\n\nCheck Car — 01141871010';
+  window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+});
+
+$('saveBtn').addEventListener('click', function(){
+  persistFiles();
+  toast('تم الحفظ ✓');
+});
+$('newSessionBtn').addEventListener('click', function(){
+  if (!confirm('بدء فحص جديد؟ البيانات الحالية محفوظة بالكود الحالي.')) return;
+  persistFiles();
+  currentCode = generateInspectionCode();
+  localStorage.setItem(CODE_KEY, currentCode);
+  files = [];
+  var all = loadAll();
+  all[currentCode] = [];
+  saveAll(all);
+  localStorage.removeItem(REPORT_KEY);
+  initDashboard();
+  toast('كود جديد: ' + currentCode);
+});
+
+$('openLogoBtn').addEventListener('click', function(){
+  renderLogoPreview();
+  $('logoModal').classList.add('active');
+});
+$('logoCloseBtn').addEventListener('click', function(){ $('logoModal').classList.remove('active'); });
+$('logoModal').addEventListener('click', function(e){ if (e.target === $('logoModal')) $('logoModal').classList.remove('active'); });
+$('logoUploadBtn').addEventListener('click', function(){ $('logoInput').click(); });
+$('logoInput').addEventListener('change', function(e){
+  var f = e.target.files[0];
+  if (!f) return;
+  if (f.type.indexOf('image/') !== 0){ toast('اختر صورة فقط','error'); return; }
+  if (f.size > 2 * 1024 * 1024){ toast('الصورة أكبر من 2MB','error'); return; }
+  var r = new FileReader();
+  r.onload = function(ev){
+    setLogo(ev.target.result);
+    toast('تم رفع اللوجو ✓');
+    e.target.value = '';
+  };
+  r.readAsDataURL(f);
+});
+$('logoRemoveBtn').addEventListener('click', function(){
+  if (!getLogo()){ toast('لا يوجد لوجو','error'); return; }
+  if (!confirm('حذف اللوجو؟')) return;
+  setLogo('');
+  toast('تم حذف اللوجو');
+});
+
+function showDashboard(){
+  $('loginScreen').classList.add('hidden');
+  $('dashboard').classList.add('active');
+  initDashboard();
+}
+
+function initDashboard(){
+  var saved = localStorage.getItem(CODE_KEY);
+  if (!saved){
+    currentCode = generateInspectionCode();
+    localStorage.setItem(CODE_KEY, currentCode);
+    var all = loadAll();
+    all[currentCode] = [];
+    saveAll(all);
+  } else {
+    currentCode = saved;
+  }
+  $('currentCodePill').textContent = currentCode;
+  $('shareCode').textContent = currentCode;
+
+  var allFiles = loadAll();
+  files = allFiles[currentCode] || [];
+
+  loadFields();
+  renderChecklist();
+  renderFiles();
+  renderAllMarkers();
+  updateHeaderLogo();
+
+  setTimeout(function(){ generateBarcode('shareBarcode', currentCode); }, 250);
+}
+
+if (isAuth()){ showDashboard(); }
+else { $('loginScreen').classList.remove('hidden'); }
+</script>
+</body>
+</html>
