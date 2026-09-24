@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://checkcar-egypt.github.io/check-car-egypt/sitemap.xml
